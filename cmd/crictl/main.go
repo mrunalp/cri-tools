@@ -112,6 +112,7 @@ func main() {
 		removePodSandboxCommand,
 		listPodSandboxCommand,
 		startContainerCommand,
+		reopenContainerLogCommand,
 		runtimeStatusCommand,
 		stopContainerCommand,
 		stopPodSandboxCommand,

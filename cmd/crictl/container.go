@@ -101,6 +101,29 @@ var startContainerCommand = cli.Command{
 	},
 }
 
+var reopenContainerLogCommand = cli.Command{
+	Name:      "reopen",
+	Usage:     "reopen container log file",
+	ArgsUsage: "CONTAINER [CONTAINER...]",
+	Action: func(context *cli.Context) error {
+		if context.NArg() == 0 {
+			return cli.ShowSubcommandHelp(context)
+		}
+		if err := getRuntimeClient(context); err != nil {
+			return err
+		}
+
+		for i := 0; i < context.NArg(); i++ {
+			containerID := context.Args().Get(i)
+			err := ReopenContainerLog(runtimeClient, containerID)
+			if err != nil {
+				return fmt.Errorf("Reopening the container log %q failed: %v", containerID, err)
+			}
+		}
+		return nil
+	},
+}
+
 var updateContainerCommand = cli.Command{
 	Name:      "update",
 	Usage:     "Update one or more running containers",
@@ -374,6 +397,25 @@ func StartContainer(client pb.RuntimeServiceClient, ID string) error {
 	logrus.Debugf("StartContainerRequest: %v", request)
 	r, err := client.StartContainer(context.Background(), request)
 	logrus.Debugf("StartContainerResponse: %v", r)
+	if err != nil {
+		return err
+	}
+	fmt.Println(ID)
+	return nil
+}
+
+// StartContainer sends a StartContainerRequest to the server, and parses
+// the returned StartContainerResponse.
+func ReopenContainerLog(client pb.RuntimeServiceClient, ID string) error {
+	if ID == "" {
+		return fmt.Errorf("ID cannot be empty")
+	}
+	request := &pb.ReopenContainerLogRequest{
+		ContainerId: ID,
+	}
+	logrus.Debugf("StartContainerRequest: %v", request)
+	r, err := client.ReopenContainerLog(context.Background(), request)
+	logrus.Debugf("ReopenContainerLogResponse: %v", r)
 	if err != nil {
 		return err
 	}
